@@ -1,0 +1,174 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description:
+  test-blog
+
+Resources:
+  TestVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 172.31.0.0/16
+      Tags:
+        - Key: Name
+          Value: TEST-VPC
+
+
+  TestIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: TEST-IGW             
+
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref TestVPC
+      InternetGatewayId: !Ref TestIGW
+
+
+  publicsubnet01:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1a
+      VpcId: !Ref testVPC
+      CidrBlock: 172.31.0.0/24
+      Tags:
+        - Key: Name
+          Value: publicsubnet01
+
+  publicsubnet02:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1c
+      VpcId: !Ref testVPC
+      CidrBlock: 172.31.1.0/24
+      Tags:
+        - Key: Name
+          Value: publicsubnet02
+
+  privatesubnet01:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1a
+      VpcId: !Ref testVPC
+      CidrBlock: 172.31.2.0/24
+      Tags:
+        - Key: Name
+          Value: privatesubnet01
+
+  privatesubnet02:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1c
+      VpcId: !Ref testVPC
+      CidrBlock: 172.31.3.0/24
+      Tags:
+        - Key: Name
+          Value: privatesubnet02
+
+
+  TestRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref TestVPC
+      Tags:
+        - Key: Name
+          Value: TEST-RouteTable1
+
+
+  TestRouteTable2: 
+     Type: AWS::EC2::RouteTable
+     Properties: 
+       VpcId: !Ref TestVPC 
+       Tags: 
+         - Key: Name
+           Value: TEST-RouteTable2
+
+
+  TestRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref TestRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref TestIGW
+
+
+  TestSubNetRoutTablAsso1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref publicsubnet01
+      RouteTableId: !Ref TestRouteTable1
+
+
+  TestSubNetRoutTablAsso2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref publicsubnet02
+      RouteTableId: !Ref TestRouteTable1
+
+
+  TestSubNetRoutTablAsso3:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref   privatesubnet01
+      RouteTableId: !Ref TestRouteTable2
+
+
+  TestSubNetRoutTablAsso4:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref   privatesubnet02
+      RouteTableId: !Ref TestRouteTable2
+
+
+  TestSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: TEST-SecurityGroup
+      GroupDescription: TEST-SecurityGroup
+      VpcId: !Ref TestVPC
+      SecurityGroupIngress:
+      - 
+        IpProtocol: tcp
+        CidrIp: 172.31.0.0/16
+        FromPort: "22"
+        ToPort: "22"
+
+
+  TestEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0b7546e839d7ace12
+      KeyName: RaiseTech_Study6
+      InstanceType: t2.micro
+      InstanceInitiatedShutdownBehavior: stop
+      Tenancy: default
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          SubnetId: !Ref TestSubNet1
+          GroupSet:
+            - !Ref TestSecurityGroup
+          PrivateIpAddress: 172.31.5.215
+
+      Tags:
+          - Key: Name
+            Value: test_linux_instance
+      
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeType: gp2
+            DeleteOnTermination: true
+            VolumeSize: 10
+
+      UserData: !Base64 |
+        sudo hostnamectl set-hostname TEST-LINUX-INSTANCE
+
+
+  EipTestServer:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref TestEC2Instance
