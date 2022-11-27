@@ -136,39 +136,3 @@ Resources:
         FromPort: "22"
         ToPort: "22"
 
-
-  TestEC2Instance:
-    Type: AWS::EC2::Instance
-    Properties:
-      ImageId: ami-0b7546e839d7ace12
-      KeyName: RaiseTech_Study6
-      InstanceType: t2.micro
-      InstanceInitiatedShutdownBehavior: stop
-      Tenancy: default
-      NetworkInterfaces:
-        - AssociatePublicIpAddress: "true"
-          DeviceIndex: "0"
-          SubnetId: !Ref TestSubNet1
-          GroupSet:
-            - !Ref TestSecurityGroup
-          PrivateIpAddress: 172.31.5.215
-
-      Tags:
-          - Key: Name
-            Value: test_linux_instance
-      
-      BlockDeviceMappings:
-        - DeviceName: /dev/xvda
-          Ebs:
-            VolumeType: gp2
-            DeleteOnTermination: true
-            VolumeSize: 10
-
-      UserData: !Base64 |
-        sudo hostnamectl set-hostname TEST-LINUX-INSTANCE
-
-
-  EipTestServer:
-    Type: AWS::EC2::EIP
-    Properties:
-      InstanceId: !Ref TestEC2Instance

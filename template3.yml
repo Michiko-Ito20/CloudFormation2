@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+ ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+        GroupName: !Sub ${AWS::StackName}-alb-sg
+        GroupDescription: "ALB SG"
+        VpcId: !Ref VPC
+        Tags:
+          - Key: Name
+            Value: !Sub ${AWS::StackName}-alb-sg
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            CidrIp: 172.31.0.0/16
+            FromPort: 80
+            ToPort: 80
+
+
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+        GroupName: !Sub ${AWS::StackName}-ec2-sg
+        GroupDescription: "EC2 SG"
+        VpcId: !Ref VPC
+        Tags:
+          - Key: Name
+            Value: !Sub ${AWS::StackName}-ec2-sg
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            SourceSecurityGroupId: !Ref ALBSecurityGroup
+
+
+  EC2InstanceProfile: 
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Path: "/"
+      Roles: 
+        - !Ref EC2Role
+      InstanceProfileName: !Sub ${AWS::StackName}-ec2-profile
+
+
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+        Path: "/"
+        RoleName: !Sub ${AWS::StackName}-ec2-role
+        Tags: 
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-ec2-role
+        AssumeRolePolicyDocument: 
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+        ManagedPolicyArns: 
+          - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  KeyPair:
+    Type: 'AWS::EC2::KeyPair'
+    Properties:
+      KeyName: !Sub ${AWS::StackName}-keypair
+
+
+  TestEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0b7546e839d7ace12
+      KeyName: RaiseTech_Study6
+      InstanceType: t2.micro
+      InstanceInitiatedShutdownBehavior: stop
+      Tenancy: default
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          SubnetId: !Ref publicsubnet01
+          GroupSet:
+            - !Ref TestSecurityGroup
+          PrivateIpAddress: 172.31.5.215
+
+      Tags:
+          - Key: Name
+            Value: test_linux_instance
+      
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeType: gp2
+            DeleteOnTermination: true
+            VolumeSize: 10
+
+      UserData: !Base64 |
+        sudo hostnamectl set-hostname TEST-LINUX-INSTANCE
+
+
+   ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: "application"
+      Scheme: "internet-facing"
+      Name: !Sub ${AWS::StackName}-alb
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-alb
+      IpAddressType: ipv4
+      Subnets: 
+        - !Ref PublicSubnet01
+        - !Ref PublicSubnet02
+      SecurityGroups: 
+        - !Ref ALBSecurityGroup
+
+  ListenerHTTP:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn: !Ref ALB
+      Port: 80
+      Protocol: HTTP
+  
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${AWS::StackName}-tg
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-tg
+      Port: 80
+      Protocol: HTTP
+      Matcher:
+        HttpCode: '200'
+      VpcId: !Ref VPC
+      TargetType: instance
+      Targets:
+        - Id: !Ref WebServer
+
+Outputs:
+  ALBURL:
+    Description: ALB endpoint URL
+    Value: !Join
+        - ""
+        - - http://
+          - !GetAtt ALB.DNSName
+
