@@ -2,9 +2,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 
  DBInstance:
     Type: AWS::RDS::DBInstance
-    DeletionPolicy: Snapshot             #入れなくても良い？
+    DeletionPolicy: Delete             #SnapshotもRetainも何かしら残るのでこちらを選択
     Properties:
-      AllocatedStorage: '5'               #ストレージ5GiB　今作っているやつは20Gitになっているので本来は大きかった？
+      AllocatedStorage: '20'               #ストレージ5GiB　MySQLの20Gitは最小サイズ
       DBInstanceClass: db.t2.micro        #記事はdb.t3.mediumだったが変更
       DBParameterGroupName: !Ref DBParameterGroup
       DBSubnetGroupName: !Ref DBSubnetGroup
@@ -28,7 +28,7 @@ AWSTemplateFormatVersion: "2010-09-09"
       Description: custom paramter group
       Family: MySQL8.0           #今使っているRDSと一緒
       Parameters:
-        character_set_database: utf8mb4   #UTF-8は文字を書く時に表示されるヤツ、MB4は動画ファイルの
+        character_set_database: utf8mb4   #UTF-8は文字コード、MB4は動画ファイルの
         character_set_client: utf8mb4
         character_set_connection: utf8mb4
         character_set_results: utf8mb4
