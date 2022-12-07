@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
     Type: AWS::RDS::DBInstance
     DeletionPolicy: Delete             #SnapshotもRetainも何かしら残るのでこちらを選択
     Properties:
-      AllocatedStorage: '20'               #ストレージ5GiB　MySQLの20Gitは最小サイズ
+      AllocatedStorage: '20'               #ストレージ5GiB　MySQLの20GiBは最小サイズ
       DBInstanceClass: db.t2.micro        #記事はdb.t3.mediumだったが変更
       DBParameterGroupName: !Ref DBParameterGroup
       DBSubnetGroupName: !Ref DBSubnetGroup
