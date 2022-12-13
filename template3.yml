@@ -1,35 +1,59 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
- ALBSecurityGroup:
+Parameters:
+  TestVPC:
+    Type: String
+
+  publicsubnet01:
+    Type: String
+
+  publicsubnet02:
+    Type: String
+
+  privatesubnet01:
+    Type: String
+
+  privatesubnet02:
+    Type: String
+
+  TestRouteTable1:
+    Type: String
+
+  TestRouteTable2:
+      Type: String
+
+  TestSecurityGroup:
+      Type: String
+
+Resources:
+  ALBSecurityGroup:                    #ALBのセキュリティグループ
     Type: AWS::EC2::SecurityGroup
     Properties:
-        GroupName: !Sub ${AWS::StackName}-alb-sg
-        GroupDescription: "ALB SG"
-        VpcId: !Ref VPC
+        GroupName: !Sub ${AWS::StackName}-alb-sg  #これができたら、alb-sgという名前で作成する
+        GroupDescription: ALB SG   #グループの説明、ALBSG
+        VpcId: !Ref TestVPC          #VPCはTestVPCに紐づける
         Tags:
           - Key: Name
-            Value: !Sub ${AWS::StackName}-alb-sg
+            Value: !Sub ${AWS::StackName}-alb-sg  #現在は無いが、alb-sgという名前で作成する
         SecurityGroupIngress:
-          - IpProtocol: tcp
-            CidrIp: 172.31.0.0/16
-            FromPort: 80
-            ToPort: 80
+          - IpProtocol: tcp     #プロトコル番号はtcp
+            CidrIp: 172.31.0.0/16   #IPv4のサイダー
+            FromPort: 80     #通信のポート番号（ここから）
+            ToPort: 80   #通信のポート番号（ここへ）
 
 
   EC2SecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+    Type: AWS::EC2::SecurityGroup   #EC2のセキュリティグループ
     Properties:
-        GroupName: !Sub ${AWS::StackName}-ec2-sg
-        GroupDescription: "EC2 SG"
-        VpcId: !Ref VPC
-        Tags:
-          - Key: Name
-            Value: !Sub ${AWS::StackName}-ec2-sg
-        SecurityGroupIngress:
-          - IpProtocol: tcp
-            FromPort: 80
-            ToPort: 80
-            SourceSecurityGroupId: !Ref ALBSecurityGroup
+      GroupName: EC2-SecurityGroup
+      GroupDescription: EC2-SecurityGroup
+      VpcId: !Ref TestVPC   #VPCはTestVPCに紐づける
+      SecurityGroupIngress:
+      - 
+        IpProtocol: tcp
+        CidrIp: 172.31.0.0/16   #サイダーIP省略可能と書いてあるが
+        FromPort: "22"   #インバウンドルールSSHサーバの接続待ち受け用
+        ToPort: "22"
 
 
   EC2InstanceProfile: 
@@ -75,9 +99,9 @@ AWSTemplateFormatVersion: "2010-09-09"
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          SubnetId: !Ref publicsubnet01
+          SubnetId: !Ref publicsubnet01                 #Publicsubnet01をコピペ貼り付け
           GroupSet:
-            - !Ref TestSecurityGroup
+            - !Ref EC2SecurityGroup                     #TestSecurityGroupからEC2SecurityGroupへ変更
           PrivateIpAddress: 172.31.5.215
 
       Tags:
@@ -95,7 +119,7 @@ AWSTemplateFormatVersion: "2010-09-09"
         sudo hostnamectl set-hostname TEST-LINUX-INSTANCE
 
 
-   ALB:
+  ALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Type: "application"
@@ -106,10 +130,11 @@ AWSTemplateFormatVersion: "2010-09-09"
           Value: !Sub ${AWS::StackName}-alb
       IpAddressType: ipv4
       Subnets: 
-        - !Ref PublicSubnet01
-        - !Ref PublicSubnet02
+        - !Ref publicsubnet01         #Publicsubnet01からpublicsubnet01へ変更
+        - !Ref publicsubnet02         #Publicsubnet02からpublicsubnet02へ変更
       SecurityGroups: 
         - !Ref ALBSecurityGroup
+
 
   ListenerHTTP:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -120,7 +145,8 @@ AWSTemplateFormatVersion: "2010-09-09"
       LoadBalancerArn: !Ref ALB
       Port: 80
       Protocol: HTTP
-  
+
+
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -132,16 +158,26 @@ AWSTemplateFormatVersion: "2010-09-09"
       Protocol: HTTP
       Matcher:
         HttpCode: '200'
-      VpcId: !Ref VPC
+      VpcId: !Ref TestVPC   #VPCはTestVPCに紐づける
       TargetType: instance
       Targets:
-        - Id: !Ref WebServer
+        - Id: !Ref TestEC2Instance   #WebServerからTestEC2Instanceへ変更。そもそもWebServerというIdを設定していない！
+
 
 Outputs:
-  ALBURL:
-    Description: ALB endpoint URL
-    Value: !Join
-        - ""
-        - - http://
-          - !GetAtt ALB.DNSName
+  TestEC2Instance:
+    Value: !Ref TestEC2Instance
+    Export:
+      Name: TestEC2InstanceName
 
+  ALB:
+    Value: !Ref ALB
+    Export:
+      Name: ALBName
+
+#  ALBURL:
+#    Description: ALB endpoint URL
+#    Value: !Join
+#        - ""
+#        - - http://
+#          - !GetAtt ALB.DNSName
