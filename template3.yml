@@ -1,37 +1,12 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Parameters:
-  TestVPC:
-    Type: String
-
-  publicsubnet01:
-    Type: String
-
-  publicsubnet02:
-    Type: String
-
-  privatesubnet01:
-    Type: String
-
-  privatesubnet02:
-    Type: String
-
-  TestRouteTable1:
-    Type: String
-
-  TestRouteTable2:
-      Type: String
-
-  TestSecurityGroup:
-      Type: String
-
 Resources:
   ALBSecurityGroup:                    #ALBのセキュリティグループ
     Type: AWS::EC2::SecurityGroup
     Properties:
         GroupName: !Sub ${AWS::StackName}-alb-sg  #これができたら、alb-sgという名前で作成する
         GroupDescription: ALB SG   #グループの説明、ALBSG
-        VpcId: !Ref TestVPC          #VPCはTestVPCに紐づける
+        VpcId: !ImportValue VPCName          #VPCはTestVPCに紐づけてインポートする
         Tags:
           - Key: Name
             Value: !Sub ${AWS::StackName}-alb-sg  #現在は無いが、alb-sgという名前で作成する
@@ -47,7 +22,7 @@ Resources:
     Properties:
       GroupName: EC2-SecurityGroup
       GroupDescription: EC2-SecurityGroup
-      VpcId: !Ref TestVPC   #VPCはTestVPCに紐づける
+      VpcId: !ImportValue VPCName   #VPCはTestVPCに紐づけてインポートする
       SecurityGroupIngress:
       - 
         IpProtocol: tcp
@@ -99,7 +74,7 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          SubnetId: !Ref publicsubnet01                 #Publicsubnet01をコピペ貼り付け
+          SubnetId: !ImportValue Createpublicsubnet01           #publicsubnet01に紐づけてインポートする
           GroupSet:
             - !Ref EC2SecurityGroup                     #TestSecurityGroupからEC2SecurityGroupへ変更
           PrivateIpAddress: 172.31.5.215
@@ -130,8 +105,8 @@ Resources:
           Value: !Sub ${AWS::StackName}-alb
       IpAddressType: ipv4
       Subnets: 
-        - !Ref publicsubnet01         #Publicsubnet01からpublicsubnet01へ変更
-        - !Ref publicsubnet02         #Publicsubnet02からpublicsubnet02へ変更
+        - !ImportValue Createpublicsubnet01         #publicsubnet01に紐づけてインポートする
+        - !ImportValue Createpublicsubnet02         #publicsubnet02に紐づけてインポートする
       SecurityGroups: 
         - !Ref ALBSecurityGroup
 
@@ -158,7 +133,7 @@ Resources:
       Protocol: HTTP
       Matcher:
         HttpCode: '200'
-      VpcId: !Ref TestVPC   #VPCはTestVPCに紐づける
+      VpcId: !ImportValue VPCName   #VPCはTestVPCに紐づけてインポートする
       TargetType: instance
       Targets:
         - Id: !Ref TestEC2Instance   #WebServerからTestEC2Instanceへ変更。そもそもWebServerというIdを設定していない！
