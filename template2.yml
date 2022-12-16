@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description:
-  test-blog
+  test-blog  #説明の部分に反映される
 
 Resources:
   TestVPC:
@@ -137,7 +137,7 @@ Resources:
         ToPort: "22"
 
 
-Outputs:
+Outputs:  #受け渡すためにはどうしても必要。そしてこのテンプレートではここが重要！
   TestVPC:
     Value: !Ref TestVPC
     Export:

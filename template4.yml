@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
+Resources:
  DBInstance:
     Type: AWS::RDS::DBInstance
     DeletionPolicy: Delete             #SnapshotもRetainも何かしら残るのでこちらを選択
@@ -19,8 +20,8 @@ AWSTemplateFormatVersion: "2010-09-09"
     Properties:
       DBSubnetGroupDescription: custom subnet group
       SubnetIds:
-        - subnet-privatesubnet01     #プライベートサブネット1にRDSを作る
-        - subnet-privatesubnet02     #プライベートサブネット2にRDSを作る合計2コできる
+        - !ImportValue Createprivatesubnet01     #プライベートサブネット1にRDSを作る
+        - !ImportValue Createprivatesubnet02     #プライベートサブネット2にRDSを作る合計2コできる
 
   DBParameterGroup:
     Type: AWS::RDS::DBParameterGroup
@@ -40,14 +41,4 @@ Outputs:
     Value: !Ref DBInstance
     Export:
       Name: !Sub "${PJPrefix}-${DBInstanceName}-id"
-
-  DBInstanceEndpoint:
-    Value: !GetAtt DBInstance.Endpoint.Address
-    Export:
-      Name: !Sub "${PJPrefix}-${DBInstanceName}-endpoint"
-
-  DBName:
-    Value: !Ref DBName
-    Export:
-      Name: !Sub "${PJPrefix}-${DBInstanceName}-dbname"
 
