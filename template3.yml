@@ -51,7 +51,7 @@ Resources:
       SecurityGroupIngress:
       - 
         IpProtocol: tcp
-        CidrIp: 172.31.0.0/16
+        CidrIp: 172.31.0.0/16   #サイダーIP省略可能と書いてあるが
         FromPort: "22"   #インバウンドルールSSHサーバの接続待ち受け用
         ToPort: "22"
 
@@ -102,7 +102,7 @@ Resources:
           SubnetId: !ImportValue Createpublicsubnet01           #publicsubnet01に紐づけてインポートする
           GroupSet:
             - !Ref EC2SecurityGroup                     #TestSecurityGroupからEC2SecurityGroupへ変更
-          PrivateIpAddress: 172.31.0.4  #第4オクテッドの数字は4～255までのいずれかに変更できる
+          PrivateIpAddress: 172.31.0.4
 
       Tags:
           - Key: Name
