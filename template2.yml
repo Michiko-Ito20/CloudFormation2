@@ -32,7 +32,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: ap-northeast-1a
-      VpcId: !Ref testVPC
+      VpcId: !Ref TestVPC
       CidrBlock: 172.31.0.0/24
       Tags:
         - Key: Name
@@ -42,7 +42,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: ap-northeast-1c
-      VpcId: !Ref testVPC
+      VpcId: !Ref TestVPC
       CidrBlock: 172.31.1.0/24
       Tags:
         - Key: Name
@@ -52,7 +52,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: ap-northeast-1a
-      VpcId: !Ref testVPC
+      VpcId: !Ref TestVPC
       CidrBlock: 172.31.2.0/24
       Tags:
         - Key: Name
@@ -62,7 +62,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: ap-northeast-1c
-      VpcId: !Ref testVPC
+      VpcId: !Ref TestVPC
       CidrBlock: 172.31.3.0/24
       Tags:
         - Key: Name
@@ -81,7 +81,7 @@ Resources:
   TestRouteTable2: 
      Type: AWS::EC2::RouteTable
      Properties: 
-       VpcId: !Ref TestVPC 
+       VpcId: !Ref TestVPC
        Tags: 
          - Key: Name
            Value: TEST-RouteTable2
@@ -135,4 +135,46 @@ Resources:
         CidrIp: 172.31.0.0/16
         FromPort: "22"
         ToPort: "22"
+
+
+Outputs:
+  TestVPC:
+    Value: !Ref TestVPC
+    Export:
+      Name: VPCName
+
+  publicsubnet01:
+    Value: !Ref publicsubnet01
+    Export:
+      Name: Createpublicsubnet01
+
+  publicsubnet02:
+    Value: !Ref publicsubnet02
+    Export:
+      Name: Createpublicsubnet02
+
+  privatesubnet01:
+    Value: !Ref privatesubnet01
+    Export:
+      Name: Createprivatesubnet01
+
+  privatesubnet02:
+    Value: !Ref privatesubnet02
+    Export:
+      Name: Createprivatesubnet02
+
+  TestRouteTable1:
+    Value: !Ref TestRouteTable1
+    Export:
+      Name: CreateTestRouteTable1
+
+  TestRouteTable2:
+    Value: !Ref TestRouteTable2
+    Export:
+      Name: CreateTestRouteTable2
+
+  TestSecurityGroup:
+    Value: !Ref TestSecurityGroup
+    Export:
+      Name: SecurityGroupName
 
