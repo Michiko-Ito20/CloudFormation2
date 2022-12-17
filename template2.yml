@@ -1,13 +1,13 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description:
+Description: #スタックの情報の説明の部分に入る
   test-blog
 
 Resources:
   TestVPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 172.31.0.0/16
+      CidrBlock: 172.31.0.0/16  #VPCのデフォルトCidr
       Tags:
         - Key: Name
           Value: TEST-VPC
