@@ -37,7 +37,7 @@ Resources:
             Value: !Sub ${AWS::StackName}-alb-sg  #現在は無いが、alb-sgという名前で作成する
         SecurityGroupIngress:
           - IpProtocol: tcp     #プロトコル番号はtcp
-            CidrIp: 172.31.0.0/16   #IPv4のサイダー
+            CidrIp: 172.31.0.0/16   #VPCのデフォルトCidr
             FromPort: 80     #通信のポート番号（ここから）
             ToPort: 80   #通信のポート番号（ここへ）
 
@@ -99,10 +99,10 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          SubnetId: !ImportValue Createpublicsubnet01           #publicsubnet01に紐づけてインポートする
+          SubnetId: !ImportValue Createpublicsubnet01   #publicsubnet01に紐づけてインポートする
           GroupSet:
             - !Ref EC2SecurityGroup                     #TestSecurityGroupからEC2SecurityGroupへ変更
-          PrivateIpAddress: 172.31.0.4
+          PrivateIpAddress: 172.31.0.4   #第4オクテッドを4～255の好きな数字にする
 
       Tags:
           - Key: Name
