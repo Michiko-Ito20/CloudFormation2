@@ -57,7 +57,7 @@ Resources:
 
 
   EC2InstanceProfile: 
-    Type: AWS::IAM::InstanceProfile
+    Type: AWS::IAM::InstanceProfile  #インスタンスプロファイルを使用して、IAM ロールを EC2 インスタンスに渡す。
     Properties: 
       Path: "/"
       Roles: 

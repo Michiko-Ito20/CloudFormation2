@@ -24,7 +24,7 @@ Resources:
         - !ImportValue Createprivatesubnet02     #プライベートサブネット2にRDSを作る合計2コできる
 
   DBParameterGroup:
-    Type: AWS::RDS::DBParameterGroup
+    Type: AWS::RDS::DBParameterGroup   #データベースの詳細
     Properties:
       Description: custom paramter group
       Family: MySQL8.0           #今使っているRDSと一緒
