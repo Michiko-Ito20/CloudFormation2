@@ -123,20 +123,6 @@ Resources:
       RouteTableId: !Ref TestRouteTable2
 
 
-  TestSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: TEST-SecurityGroup
-      GroupDescription: TEST-SecurityGroup
-      VpcId: !Ref TestVPC
-      SecurityGroupIngress:
-      - 
-        IpProtocol: tcp
-        CidrIp: 172.31.0.0/16
-        FromPort: "22"
-        ToPort: "22"
-
-
 Outputs:
   TestVPC:
     Value: !Ref TestVPC
@@ -172,9 +158,4 @@ Outputs:
     Value: !Ref TestRouteTable2
     Export:
       Name: CreateTestRouteTable2
-
-  TestSecurityGroup:
-    Value: !Ref TestSecurityGroup
-    Export:
-      Name: SecurityGroupName
 
